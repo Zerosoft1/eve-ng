@@ -1,0 +1,32 @@
+#! /user/bin/env python
+
+import getpass
+import sys
+import telnetlib
+
+HOST = "10.0.0.99"
+user = raw_input("Enter your telnet username: ")
+password = getpass.getpass()
+
+tn = telnetlib.Telnet(HOST)
+
+tn.read_until("Username: ")
+tn.write(user + "\n")
+if password:
+	tn.read_until("Password: ")
+	tn.write(password + "\n")
+
+tn.write("conf t\n")
+for n in range (0,2):
+    tn.write("int e0/" + str(n) + "\n")
+    tn.write("ip add 10.0." + str(n+1) + "8.8 255.255.255.0\n")
+    tn.write("ip ospf network point-to-point\n")
+    tn.write("ip ospf cost 1\n")
+    tn.write("no shut\n")
+tn.write("router ospf 1001\n")
+tn.write("network 10.0.0.0 0.0.255.255 area 0\n")
+tn.write("end\n")
+tn.write("exit\n")
+
+print tn.read_all()
+
